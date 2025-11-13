@@ -113,6 +113,20 @@
       </svg>
     );
 
+    const SearchIcon = () => (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="11" cy="11" r="8"/>
+        <path d="m21 21-4.35-4.35"/>
+      </svg>
+    );
+
+    const Home = () => (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    );
+
     function VideoDownloader() {
       const [url, setUrl] = useState('');
       const [loading, setLoading] = useState(false);
@@ -245,6 +259,23 @@
               <p className="text-lg md:text-xl opacity-90">
                 Powered by Claude AI & yt-dlp
               </p>
+            </div>
+
+            {/* Navigation */}
+            <div className="flex justify-center gap-4 mb-6">
+              <button 
+                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 shadow-lg cursor-default"
+              >
+                <Home />
+                <span>Telechajman</span>
+              </button>
+              <a 
+                href="search.html" 
+                className="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-purple-50 transition-all flex items-center gap-2 shadow-lg"
+              >
+                <SearchIcon />
+                <span>Rechèch Mizik</span>
+              </a>
             </div>
 
             {/* Main Card */}
@@ -469,11 +500,30 @@
                 </div>
               )}
 
+              {/* Quick Search Section */}
+              <div className="mt-8 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-6 border-2 border-indigo-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-lg text-gray-800 flex items-center gap-2">
+                    <SearchIcon />
+                    Pa konnen lyen videyo a?
+                  </h3>
+                </div>
+                <p className="text-gray-700 mb-4">
+                  Itilize motè rechèch nou an pou jwenn mizik ak videyo ou vle yo pa non atis, tit oswa lyrics!
+                </p>
+                <a 
+                  href="search.html"
+                  className="inline-block bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 transition-all"
+                >
+                  🎵 Ale Chache Mizik
+                </a>
+              </div>
+
               {/* Instructions */}
               <div className="mt-8 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6">
                 <h3 className="font-semibold text-lg mb-4 text-gray-800 flex items-center gap-2">
                   <Info />
-                  Kijan pou itilize li:
+                                   Kijan pou itilize li:
                 </h3>
                 <ol className="space-y-3 text-gray-700">
                   <li className="flex gap-3">
