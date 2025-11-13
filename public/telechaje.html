@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ht">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rechèch Mizik & Videyo - Claude AI</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+    
+    // Icons
+    const Search = () => (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="11" cy="11" r="8"/>
+        <path d="m21 21-4.35-4.35"/>
+      </svg>
+    );
+
+    const Music = () => (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 18V5l12-2v13"/>
+        <circle cx="6" cy="18" r="3"/>
+        <circle cx="18" cy="16" r="3"/>
+      </svg>
+    );
+
+    const SearchIcon = () => (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="11" cy="11" r="8"/>
+        <path d="m21 21-4.35-4.35"/>
+      </svg>
+    );
+
+    const Download = () => (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+    );
+
+    const Play = () => (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="5 3 19 12 5 21 5 3"/>
+      </svg>
+    );
+
+    const Loader2 = () => (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin">
+        <line x1="12" y1="2" x2="12" y2="6"/>
+        <line x1="12" y1="18" x2="12" y2="22"/>
+        <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/>
+        <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
+        <line x1="2" y1="12" x2="6" y2="12"/>
+        <line x1="18" y1="12" x2="22" y2="12"/>
+        <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/>
+        <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
+      </svg>
+    );
+
+    const ExternalLink = () => (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+        <polyline points="15 3 21 3 21 9"/>
+        <line x1="10" y1="14" x2="21" y2="3"/>
+      </svg>
+    );
+
+    const Youtube = () => (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+      </svg>
+    );
+
+    const Clock = () => (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="12 6 12 12 16 14"/>
+      </svg>
+    );
+
+    const Eye = () => (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+    );
+
+    const Home = () => (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    );
+
+    function MusicSearchApp() {
+      const [searchQuery, setSearchQuery] = useState('');
+      const [searchResults, setSearchResults] = useState([]);
+      const [searching, setSearching] = useState(false);
+      const [error, setError] = useState('');
+      const [selectedVideo, setSelectedVideo] = useState(null);
+      const [recentSearches, setRecentSearches] = useState([]);
+
+      // Simulate search with Claude AI
+      const handleSearch = async () => {
+        if (!searchQuery.trim()) {
+          setError('Tanpri tape non atis, tit mizik oswa mo kle pou chache');
+          return;
+        }
+
+        setSearching(true);
+        setError('');
+        setSearchResults([]);
+
+        try {
+          const response = await fetch("https://api.anthropic.com/v1/messages", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: "claude-sonnet-4-20250514",
+              max_tokens: 1000,
+              messages: [
+                { 
+                  role: "user", 
+                  content: `Chache videyo mizik ak enfòmasyon sou YouTube pou: "${searchQuery}". Bay mwen lis 6 rezilta avèk tit, non chanel, apwoximasyon dire, ak apwoximasyon kantite moun ki te gade yo. Reponn SÈLMAN an JSON avèk fòma sa: {"results": [{"title": "...", "channel": "...", "duration": "...", "views": "...", "videoId": "..."}]}. Pa mete okenn lòt tèks.`
+                }
+              ],
+            })
+          });
+
+          const data = await response.json();
+          const text = data.content.map(i => i.text || "").join("\n");
+          const clean = text.replace(/```json|```/g, "").trim();
+          const parsed = JSON.parse(clean);
+          
+          setSearchResults(parsed.results || []);
+          
+          // Add to recent searches
+          if (!recentSearches.includes(searchQuery)) {
+            setRecentSearches(prev => [searchQuery, ...prev.slice(0, 4)]);
+          }
+        } catch (err) {
+          console.error('Erè rechèch:', err);
+          setError('Gen yon pwoblèm nan rechèch la. Eseye ankò.');
+        } finally {
+          setSearching(false);
+        }
+      };
+
+      const goToDownloadPage = (videoId) => {
+        const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+        // In real app, this would navigate to download page with the URL
+        window.open(`/download?url=${encodeURIComponent(youtubeUrl)}`, '_blank');
+      };
+
+      const formatViews = (views) => {
+        if (!views) return 'N/A';
+        if (views.includes('M')) return views;
+        if (views.includes('K')) return views;
+        const num = parseInt(views.replace(/\D/g, ''));
+        if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+        if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+        return num.toString();
+      };
+
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-4">
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="text-center text-white mb-8 pt-8">
+              <div className="flex items-center justify-center mb-4">
+                <div className="animate-pulse">
+                  <Music />
+                </div>
+              </div>
+              <h1 className="text-4xl md:text-6xl font-bold mb-3">
+                🎵 Rechèch Mizik & Videyo
+              </h1>
+              <p className="text-lg md:text-xl opacity-90">
+                Chache nenpòt mizik oswa videyo - Powered by Claude AI
+              </p>
+            </div>
+
+            {/* Navigation */}
+            <div className="flex justify-center mb-6">
+              <a 
+                href="/download" 
+                className="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-purple-50 transition-all flex items-center gap-2 shadow-lg"
+              >
+                <Home />
+                <span>Retounen nan Telechajman</span>
+              </a>
+            </div>
+
+            {/* Main Card */}
+            <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-8 mb-8">
+              {/* Search Bar */}
+              <div className="mb-8">
+                <div className="flex flex-col md:flex-row gap-3">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                    placeholder="Tape non atis, tit mizik oswa mo kle... (Egzanp: 'Alan Cave', 'Compas music', 'Carimi')"
+                    className="flex-1 px-5 py-4 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none text-lg"
+                  />
+                  <button
+                    onClick={handleSearch}
+                    disabled={searching}
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {searching ? (
+                      <>
+                        <Loader2 />
+                        <span>Ap Chache...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Search />
+                        <span>Chache</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Recent Searches */}
+                {recentSearches.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-sm text-gray-600 mb-2">Rechèch resan:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {recentSearches.map((query, index) => (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            setSearchQuery(query);
+                            handleSearch();
+                          }}
+                          className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm hover:bg-purple-200 transition-all"
+                        >
+                          {query}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Error Message */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                  <p className="text-red-700">{error}</p>
+                </div>
+              )}
+
+              {/* Search Results */}
+              {searchResults.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                    <Music />
+                    Rezilta Rechèch ({searchResults.length})
+                  </h2>
+                  
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {searchResults.map((video, index) => (
+                      <div key={index} className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-5 border border-purple-200 hover:shadow-xl transition-all">
+                        {/* Video Thumbnail Placeholder */}
+                        <div className="bg-gradient-to-br from-purple-300 to-pink-300 rounded-lg mb-4 h-40 flex items-center justify-center">
+                          <Youtube />
+                        </div>
+
+                        {/* Video Info */}
+                        <h3 className="font-bold text-gray-800 mb-2 line-clamp-2">
+                          {video.title}
+                        </h3>
+                        
+                        <p className="text-sm text-gray-600 mb-3">
+                          {video.channel}
+                        </p>
+
+                        <div className="flex items-center gap-4 mb-4 text-sm text-gray-600">
+                          <div className="flex items-center gap-1">
+                            <Clock />
+                            <span>{video.duration}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Eye />
+                            <span>{formatViews(video.views)}</span>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => window.open(`https://www.youtube.com/watch?v=${video.videoId}`, '_blank')}
+                            className="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all flex items-center justify-center gap-2 text-sm font-semibold"
+                          >
+                            <Play />
+                            <span>Gade</span>
+                          </button>
+                          <button
+                            onClick={() => goToDownloadPage(video.videoId)}
+                            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all flex items-center justify-center gap-2 text-sm font-semibold"
+                          >
+                            <Download />
+                            <span>Telechaje</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Instructions */}
+              {searchResults.length === 0 && !searching && (
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6">
+                  <h3 className="font-semibold text-lg mb-4 text-gray-800">
+                    🎯 Egzanp Rechèch:
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-white rounded-lg p-4">
+                      <p className="font-semibold text-purple-600 mb-2">Pa Non Atis:</p>
+                      <ul className="text-sm text-gray-700 space-y-1">
+                        <li>• "Alan Cave"</li>
+                        <li>• "Carimi"</li>
+                        <li>• "T-Vice"</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white rounded-lg p-4">
+                      <p className="font-semibold text-purple-600 mb-2">Pa Tit Mizik:</p>
+                      <ul className="text-sm text-gray-700 space-y-1">
+                        <li>• "Se Pa Pou Dat"</li>
+                        <li>• "Bel Tifi"</li>
+                        <li>• "Kem Pa Sote"</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white rounded-lg p-4">
+                      <p className="font-semibold text-purple-600 mb-2">Pa Jan Mizik:</p>
+                      <ul className="text-sm text-gray-700 space-y-1">
+                        <li>• "Compas music"</li>
+                        <li>• "Haitian gospel"</li>
+                        <li>• "Raboday"</li>
+                      </ul>
+                    </div>
+                    <div className="bg-white rounded-lg p-4">
+                      <p className="font-semibold text-purple-600 mb-2">Pa Mo Kle:</p>
+                      <ul className="text-sm text-gray-700 space-y-1">
+                        <li>• "Haiti music 2024"</li>
+                        <li>• "Kompa love songs"</li>
+                        <li>• "Carnival Haiti"</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Claude AI Info */}
+              <div className="mt-6 bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <p className="text-sm text-purple-800">
+                  🤖 <strong>Powered by Claude AI:</strong> Rechèch sa a itilize entèlijans atifisyèl Claude pou jwenn pi bon rezilta pou ou. Apre ou chwazi yon videyo, ou ka telechaje li dirèkteman!
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="text-center text-white text-sm opacity-75 space-y-2 pb-8">
+              <p>🎵 Chache mizik, videyo, ak lòt kontni sou YouTube</p>
+              <p>✨ Telechaje videyo yo fasil ak rapid</p>
+              <p className="text-xs mt-4">⚠️ Respekte dwa otè yo - Sèlman itilize pou itilizasyon pèsonèl</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<MusicSearchApp />, document.getElementById('root'));
+  </script>
+</body>
+</html>
