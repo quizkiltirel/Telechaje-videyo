@@ -1,353 +1,137 @@
 <!DOCTYPE html>
 <html lang="ht">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rechèch Mizik & Videyo - Claude AI</title>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rechèch Mizik</title>
+<style>
+  :root{
+    --bg:#0f1115; --surface:#171a21; --surface-2:#1f232c; --border:#2a2f3a;
+    --text:#e9ebef; --text-dim:#9198a6; --accent:#6c5ce7; --accent-2:#00d4b5; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:radial-gradient(circle at 20% -10%, #241f3a 0%, var(--bg) 45%);
+    color:var(--text); min-height:100vh;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:32px 20px 80px}
+  header{text-align:center;margin-bottom:28px}
+  header h1{font-size:2rem;margin:0 0 6px;font-weight:800;letter-spacing:-0.5px}
+  header p{color:var(--text-dim);margin:0;font-size:.95rem}
+  nav{display:flex;justify-content:center;gap:10px;margin-bottom:24px}
+  nav a{
+    text-decoration:none;padding:10px 18px;border-radius:999px;font-weight:600;font-size:.9rem;
+    border:1px solid var(--border);
+  }
+  nav .active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  nav a:not(.active){background:var(--surface);color:var(--text-dim)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px}
+  .input-row{display:flex;gap:10px;flex-wrap:wrap}
+  input[type=text]{
+    flex:1;min-width:220px;padding:14px 16px;border-radius:10px;border:1px solid var(--border);
+    background:var(--surface-2);color:var(--text);font-size:1rem;
+  }
+  input[type=text]:focus{outline:none;border-color:var(--accent)}
+  button.primary{
+    background:linear-gradient(135deg,var(--accent),#a29bfe);border:none;color:#fff;
+    padding:14px 22px;border-radius:10px;font-weight:700;cursor:pointer;font-size:1rem;
+  }
+  button.primary:disabled{opacity:.5;cursor:not-allowed}
+  .error{background:#2b1620;border:1px solid #4a2230;color:#ff9b9b;padding:14px 16px;border-radius:10px;margin-top:16px;font-size:.92rem}
+  .result-item{
+    display:flex;gap:14px;background:var(--surface-2);border-radius:12px;padding:12px;margin-bottom:10px;
+    align-items:center;
+  }
+  .result-item img{width:120px;height:68px;object-fit:cover;border-radius:8px;flex-shrink:0;background:#000}
+  .result-meta{flex:1;min-width:0}
+  .result-meta .title{font-weight:700;font-size:.92rem;margin-bottom:4px;line-height:1.3;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .result-meta .sub{color:var(--text-dim);font-size:.8rem}
+  .use-btn{
+    background:var(--accent-2);color:#06231e;border:none;border-radius:8px;padding:9px 14px;
+    font-weight:700;font-size:.82rem;cursor:pointer;white-space:nowrap;text-decoration:none;
+  }
+  .empty{text-align:center;color:var(--text-dim);padding:30px 10px;font-size:.92rem}
+</style>
 </head>
 <body>
-  <div id="root"></div>
+<div class="wrap">
+  <header>
+    <h1>Rechèch Mizik</h1>
+    <p>Vrè rezilta YouTube — chwazi youn epi ale telechaje l</p>
+  </header>
 
-  <script type="text/babel">
-    const { useState } = React;
-    
-    // Icons
-    const Search = () => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="11" cy="11" r="8"/>
-        <path d="m21 21-4.35-4.35"/>
-      </svg>
-    );
+  <nav>
+    <a href="/">Telechajman</a>
+    <a href="/search" class="active">Rechèch Mizik</a>
+  </nav>
 
-    const Music = () => (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M9 18V5l12-2v13"/>
-        <circle cx="6" cy="18" r="3"/>
-        <circle cx="18" cy="16" r="3"/>
-      </svg>
-    );
+  <div class="card">
+    <div class="input-row">
+      <input id="queryInput" type="text" placeholder="Chache yon chan, atis, oswa videyo...">
+      <button class="primary" id="searchBtn">Chache</button>
+    </div>
+    <div id="errorBox"></div>
+  </div>
 
-    const Download = () => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-        <polyline points="7 10 12 15 17 10"/>
-        <line x1="12" y1="15" x2="12" y2="3"/>
-      </svg>
-    );
+  <div id="resultsCard" class="card" style="display:none">
+    <div id="resultsList"></div>
+  </div>
+</div>
 
-    const Play = () => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <polygon points="5 3 19 12 5 21 5 3"/>
-      </svg>
-    );
+<script>
+const $ = sel => document.querySelector(sel);
+function escapeHtml(str){ const d=document.createElement('div'); d.textContent = str ?? ''; return d.innerHTML; }
+function showError(msg){ $('#errorBox').innerHTML = msg ? `<div class="error">${escapeHtml(msg)}</div>` : ''; }
 
-    const Loader2 = () => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-spin">
-        <line x1="12" y1="2" x2="12" y2="6"/>
-        <line x1="12" y1="18" x2="12" y2="22"/>
-        <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/>
-        <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/>
-        <line x1="2" y1="12" x2="6" y2="12"/>
-        <line x1="18" y1="12" x2="22" y2="12"/>
-        <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/>
-        <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/>
-      </svg>
-    );
+async function search(){
+  const query = $('#queryInput').value.trim();
+  showError('');
+  $('#resultsCard').style.display = 'none';
+  if(!query){ showError('Tanpri antre yon rechèch'); return; }
 
-    const Youtube = () => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-      </svg>
-    );
+  const btn = $('#searchBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Ap chache...';
 
-    const Clock = () => (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="12" cy="12" r="10"/>
-        <polyline points="12 6 12 12 16 14"/>
-      </svg>
-    );
-
-    const Eye = () => (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-        <circle cx="12" cy="12" r="3"/>
-      </svg>
-    );
-
-    const Home = () => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-        <polyline points="9 22 9 12 15 12 15 22"/>
-      </svg>
-    );
-
-    function MusicSearchApp() {
-      const [searchQuery, setSearchQuery] = useState('');
-      const [searchResults, setSearchResults] = useState([]);
-      const [searching, setSearching] = useState(false);
-      const [error, setError] = useState('');
-      const [recentSearches, setRecentSearches] = useState([]);
-
-      // Rechèch REYÈL ak Claude
-      const handleSearch = async () => {
-        if (!searchQuery.trim()) {
-          setError('Tanpri tape non atis, tit mizik oswa mo kle');
-          return;
-        }
-
-        setSearching(true);
-        setError('');
-        setSearchResults([]);
-
-        try {
-          const response = await fetch('/api/search', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query: searchQuery })
-          });
-
-          const data = await response.json();
-          
-          if (data.results && data.results.length > 0) {
-            setSearchResults(data.results);
-            
-            // Ajoute nan rechèch resan
-            if (!recentSearches.includes(searchQuery)) {
-              setRecentSearches(prev => [searchQuery, ...prev.slice(0, 4)]);
-            }
-          } else {
-            setError('Pa jwenn okenn rezilta pou rechèch sa a');
-          }
-        } catch (err) {
-          console.error('Erè rechèch:', err);
-          setError('Pwoblèm nan rechèch. Verifye si sèvè a ap kouri.');
-        } finally {
-          setSearching(false);
-        }
-      };
-
-      const goToDownloadPage = (videoId) => {
-        const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
-        // Ouvri paj telechajman ak URL la
-        window.location.href = `/?url=${encodeURIComponent(youtubeUrl)}`;
-      };
-
-      const formatViews = (views) => {
-        if (!views) return 'N/A';
-        if (views.includes('M') || views.includes('K')) return views;
-        const num = parseInt(views.replace(/\D/g, ''));
-        if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-        if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-        return num.toString();
-      };
-
-      return (
-        <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-4">
-          <div className="max-w-7xl mx-auto">
-            {/* Header */}
-            <div className="text-center text-white mb-8 pt-8">
-              <div className="flex items-center justify-center mb-4 animate-pulse">
-                <Music />
-              </div>
-              <h1 className="text-4xl md:text-6xl font-bold mb-3">
-                🎵 Rechèch Mizik & Videyo
-              </h1>
-              <p className="text-lg md:text-xl opacity-90">
-                Chache nenpòt mizik oswa videyo - Powered by Claude AI
-              </p>
-            </div>
-
-            {/* Navigation */}
-            <div className="flex justify-center gap-4 mb-6">
-              <a 
-                href="/" 
-                className="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-purple-50 transition-all flex items-center gap-2 shadow-lg"
-              >
-                <Home />
-                <span>Retounen nan Telechajman</span>
-              </a>
-              <button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 shadow-lg">
-                Rechèch Mizik
-              </button>
-            </div>
-
-            {/* Main Card */}
-            <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-8 mb-8">
-              {/* Search Bar */}
-              <div className="mb-8">
-                <div className="flex flex-col md:flex-row gap-3">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                    placeholder="Tape non atis, tit mizik oswa mo kle... (Egzanp: 'Alan Cave', 'Compas music')"
-                    className="flex-1 px-5 py-4 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none text-lg"
-                  />
-                  <button
-                    onClick={handleSearch}
-                    disabled={searching}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {searching ? <><Loader2 /> Ap Chache...</> : <><Search /> Chache</>}
-                  </button>
-                </div>
-
-                {/* Recent Searches */}
-                {recentSearches.length > 0 && (
-                  <div className="mt-4">
-                    <p className="text-sm text-gray-600 mb-2">Rechèch resan:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {recentSearches.map((query, index) => (
-                        <button
-                          key={index}
-                          onClick={() => {
-                            setSearchQuery(query);
-                            handleSearch();
-                          }}
-                          className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm hover:bg-purple-200 transition-all"
-                        >
-                          {query}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Error Message */}
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                  <p className="text-red-700">{error}</p>
-                </div>
-              )}
-
-              {/* Search Results */}
-              {searchResults.length > 0 && (
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                    <Music />
-                    Rezilta Rechèch ({searchResults.length})
-                  </h2>
-                  
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {searchResults.map((video, index) => (
-                      <div key={index} className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-5 border border-purple-200 hover:shadow-xl transition-all">
-                        {/* Video Thumbnail */}
-                        <div className="bg-gradient-to-br from-purple-300 to-pink-300 rounded-lg mb-4 h-40 flex items-center justify-center">
-                          <Youtube />
-                        </div>
-
-                        {/* Video Info */}
-                        <h3 className="font-bold text-gray-800 mb-2 line-clamp-2">
-                          {video.title}
-                        </h3>
-                        
-                        <p className="text-sm text-gray-600 mb-3">
-                          {video.channel}
-                        </p>
-
-                        <div className="flex items-center gap-4 mb-4 text-sm text-gray-600">
-                          <div className="flex items-center gap-1">
-                            <Clock />
-                            <span>{video.duration}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Eye />
-                            <span>{formatViews(video.views)}</span>
-                          </div>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => window.open(`https://www.youtube.com/watch?v=${video.videoId}`, '_blank')}
-                            className="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all flex items-center justify-center gap-2 text-sm font-semibold"
-                          >
-                            <Play />
-                            <span>Gade</span>
-                          </button>
-                          <button
-                            onClick={() => goToDownloadPage(video.videoId)}
-                            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all flex items-center justify-center gap-2 text-sm font-semibold"
-                          >
-                            <Download />
-                            <span>Telechaje</span>
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Instructions */}
-              {searchResults.length === 0 && !searching && (
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6">
-                  <h3 className="font-semibold text-lg mb-4 text-gray-800">
-                    🎯 Egzanp Rechèch:
-                  </h3>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="bg-white rounded-lg p-4">
-                      <p className="font-semibold text-purple-600 mb-2">Pa Non Atis:</p>
-                      <ul className="text-sm text-gray-700 space-y-1">
-                        <li>• "Alan Cave"</li>
-                        <li>• "Carimi"</li>
-                        <li>• "T-Vice"</li>
-                      </ul>
-                    </div>
-                    <div className="bg-white rounded-lg p-4">
-                      <p className="font-semibold text-purple-600 mb-2">Pa Tit Mizik:</p>
-                      <ul className="text-sm text-gray-700 space-y-1">
-                        <li>• "Se Pa Pou Dat"</li>
-                        <li>• "Bel Tifi"</li>
-                        <li>• "Kem Pa Sote"</li>
-                      </ul>
-                    </div>
-                    <div className="bg-white rounded-lg p-4">
-                      <p className="font-semibold text-purple-600 mb-2">Pa Jan Mizik:</p>
-                      <ul className="text-sm text-gray-700 space-y-1">
-                        <li>• "Compas music"</li>
-                        <li>• "Haitian gospel"</li>
-                        <li>• "Raboday"</li>
-                      </ul>
-                    </div>
-                    <div className="bg-white rounded-lg p-4">
-                      <p className="font-semibold text-purple-600 mb-2">Pa Mo Kle:</p>
-                      <ul className="text-sm text-gray-700 space-y-1">
-                        <li>• "Haiti music 2024"</li>
-                        <li>• "Kompa love songs"</li>
-                        <li>• "Carnival Haiti"</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Claude AI Info */}
-              <div className="mt-6 bg-purple-50 border border-purple-200 rounded-lg p-4">
-                <p className="text-sm text-purple-800">
-                  🤖 <strong>Powered by Claude AI:</strong> Rechèch sa a itilize Claude pou jwenn pi bon rezilta. Apre ou chwazi yon videyo, ou ka telechaje li dirèkteman!
-                </p>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="text-center text-white text-sm opacity-75 space-y-2 pb-8">
-              <p>🎵 Chache mizik, videyo ak lòt kontni</p>
-              <p>✨ Telechaje videyo yo fasil ak rapid</p>
-              <p className="text-xs mt-4">⚠️ Respekte dwa otè - Sèlman pou itilizasyon pèsonèl</p>
-            </div>
-          </div>
-        </div>
-      );
+  try{
+    const res = await fetch('/api/search', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({query})
+    });
+    const data = await res.json();
+    if(!res.ok){
+      showError(data.error || 'Pwoblèm nan rechèch la');
+      return;
     }
+    renderResults(data.results || []);
+  } catch(e){
+    showError('Pwoblèm koneksyon ak sèvè a.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Chache';
+  }
+}
 
-    ReactDOM.render(<MusicSearchApp />, document.getElementById('root'));
-  </script>
+function renderResults(results){
+  $('#resultsCard').style.display = 'block';
+  if(!results.length){
+    $('#resultsList').innerHTML = `<div class="empty">Pa gen rezilta pou rechèch sa a.</div>`;
+    return;
+  }
+  $('#resultsList').innerHTML = results.map(r => `
+    <div class="result-item">
+      <img src="${escapeHtml(r.thumbnail)}" alt="" loading="lazy" onerror="this.style.display='none'">
+      <div class="result-meta">
+        <div class="title">${escapeHtml(r.title)}</div>
+        <div class="sub">${escapeHtml(r.channel)} ${r.duration ? '· '+escapeHtml(r.duration) : ''} ${r.views ? '· '+escapeHtml(r.views)+' vizyonaj' : ''}</div>
+      </div>
+      <a class="use-btn" href="/?url=${encodeURIComponent(r.url)}" onclick="localStorage.setItem('lastUrl','${r.url}')">Telechaje</a>
+    </div>`).join('');
+}
+
+$('#searchBtn').addEventListener('click', search);
+$('#queryInput').addEventListener('keypress', e => { if(e.key === 'Enter') search(); });
+</script>
 </body>
 </html>
