@@ -149,7 +149,8 @@ async function analyze(){
     });
     const data = await res.json();
     if(!data.isValid){
-      showError(data.reason || 'Lyen sa a pa valid');
+      const prefix = data.platform ? `[${data.platform}] ` : '';
+      showError(prefix + (data.reason || 'Lyen sa a pa valid'));
     } else {
       currentVideoInfo = data;
       renderVideoInfo(data);
@@ -251,7 +252,8 @@ function pollStatus(jobId){
       }
       if(job.status === 'error'){
         clearInterval(pollTimer);
-        showError(job.error || 'Pwoblèm pandan telechajman an');
+        const prefix = job.platform ? `[${job.platform}] ` : '';
+        showError(prefix + (job.error || 'Pwoblèm pandan telechajman an'));
         $('#resultBox').innerHTML = '';
         $('#downloadBtn').disabled = false;
       }
