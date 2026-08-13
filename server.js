@@ -62,6 +62,7 @@ function detectPlatform(extractor, originalUrl) {
   if (e.includes('twitter') || e.includes('x.com')) return 'Twitter/X';
   if (e.includes('vimeo')) return 'Vimeo';
   if (e.includes('dailymotion')) return 'Dailymotion';
+  if (e.includes('snapchat')) return 'Snapchat';
   return extractor;
 }
 
@@ -77,6 +78,7 @@ function detectPlatformFromUrl(url) {
     if (host.includes('twitter.com') || host.includes('x.com')) return 'Twitter/X';
     if (host.includes('vimeo.com')) return 'Vimeo';
     if (host.includes('dailymotion.com')) return 'Dailymotion';
+    if (host.includes('snapchat.com')) return 'Snapchat';
     return null;
   } catch {
     return null;
@@ -108,6 +110,9 @@ function buildErrorMessage(platform, rawError) {
       : 'Nou pa ka jwenn videyo YouTube sa a. Li ka prive, efase, oswa rejyon w bloke.',
     'Vimeo': 'Nou pa ka jwenn videyo Vimeo sa a. Li ka prive oswa mande yon modpas.',
     'Dailymotion': 'Nou pa ka jwenn videyo Dailymotion sa a. Verifye lyen an.',
+    'Snapchat': needsLogin
+      ? 'Kontni Snapchat sa a mande koneksyon oswa li disparèt deja (Snap ak Istwa yo gen dire limite epi yo ka pa aksesib apre yon tan).'
+      : 'Nou pa ka jwenn kontni Snapchat sa a. Spotlight piblik ka mache, men Snap/Istwa prive pa sipòte.',
   };
 
   if (platform && messages[platform]) return messages[platform];
