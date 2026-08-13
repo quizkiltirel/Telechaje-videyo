@@ -65,6 +65,56 @@ function detectPlatform(extractor, originalUrl) {
   return extractor;
 }
 
+// Idantifye platfòm nan sèlman ak non domèn lan (pa mande yt-dlp), pou nou ka
+// bay yon mesaj erè espesifik pou chak platfòm menm lè yt-dlp echwe.
+function detectPlatformFromUrl(url) {
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    if (host.includes('youtube.com') || host.includes('youtu.be')) return 'YouTube';
+    if (host.includes('facebook.com') || host.includes('fb.watch')) return 'Facebook';
+    if (host.includes('instagram.com')) return 'Instagram';
+    if (host.includes('tiktok.com')) return 'TikTok';
+    if (host.includes('twitter.com') || host.includes('x.com')) return 'Twitter/X';
+    if (host.includes('vimeo.com')) return 'Vimeo';
+    if (host.includes('dailymotion.com')) return 'Dailymotion';
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+// Mesaj erè espesifik pa platfòm, selon sa yt-dlp reponn ak sa nou konnen sou
+// restriksyon chak platfòm (koneksyon obligatwa, kontni prive, elatriye).
+function buildErrorMessage(platform, rawError) {
+  const err = (rawError || '').toLowerCase();
+  const needsLogin = err.includes('login') || err.includes('cookies') || err.includes('rate-limit')
+    || err.includes('private') || err.includes('sign in') || err.includes('403') || err.includes('unable to extract');
+
+  const messages = {
+    'Facebook': needsLogin
+      ? 'Videyo Facebook sa a mande koneksyon oswa li prive/Reel ki pwoteje. Facebook bloke souvan aksè otomatik pou kontni sa yo.'
+      : 'Nou pa ka jwenn videyo Facebook sa a. Verifye lyen an oswa eseye retire paramèt anplis nan URL la (tout sa ki apre "?").',
+    'Instagram': needsLogin
+      ? 'Kontni Instagram sa a mande koneksyon (kont prive, Reel restren, oswa istwa). Instagram bloke aksè san idantifyan pou kontni sa yo.'
+      : 'Nou pa ka jwenn kontni Instagram sa a. Li ka efase oswa lyen an pa kòrèk.',
+    'TikTok': needsLogin
+      ? 'Videyo TikTok sa a mande koneksyon oswa li rejyonal/restren.'
+      : 'Nou pa ka jwenn videyo TikTok sa a. Verifye lyen an ankò.',
+    'Twitter/X': needsLogin
+      ? 'Videyo sa a sou X/Twitter mande koneksyon pou wè l (kont prive oswa restriksyon).'
+      : 'Nou pa ka jwenn videyo sa a sou X/Twitter. Verifye lyen an.',
+    'YouTube': needsLogin
+      ? 'Videyo YouTube sa a mande koneksyon (kontni pou granmoun, prive, oswa restriksyon rejyonal).'
+      : 'Nou pa ka jwenn videyo YouTube sa a. Li ka prive, efase, oswa rejyon w bloke.',
+    'Vimeo': 'Nou pa ka jwenn videyo Vimeo sa a. Li ka prive oswa mande yon modpas.',
+    'Dailymotion': 'Nou pa ka jwenn videyo Dailymotion sa a. Verifye lyen an.',
+  };
+
+  if (platform && messages[platform]) return messages[platform];
+  if (platform) return `Nou pa ka jwenn kontni sa a sou ${platform}. Li ka prive oswa lyen an pa kòrèk.`;
+  return 'Nou pa rekonèt platfòm lyen sa a, oswa li pa sipòte.';
+}
+
 function isSupportedUrl(url) {
   try {
     const u = new URL(url);
@@ -83,28 +133,35 @@ app.post('/api/analyze', async (req, res) => {
   if (!url || !url.trim()) {
     return res.status(400).json({ isValid: false, reason: 'Tanpri mete yon lyen videyo' });
   }
-  if (!isSupportedUrl(url.trim())) {
+  const trimmedUrl = url.trim();
+  const urlPlatform = detectPlatformFromUrl(trimmedUrl);
+
+  if (!isSupportedUrl(trimmedUrl)) {
     return res.status(400).json({ isValid: false, reason: 'Lyen sa a pa gen fòma URL ki valid' });
+  }
+  if (!urlPlatform) {
+    return res.json({ isValid: false, platform: null, reason: buildErrorMessage(null) });
   }
 
   const hasYtDlp = await checkYtDlp();
   if (!hasYtDlp) {
     return res.status(500).json({
       isValid: false,
+      platform: urlPlatform,
       reason: 'yt-dlp pa enstale sou sèvè a. Kòmand pou enstale l: pip install -U yt-dlp',
     });
   }
 
   try {
     const { stdout } = await execPromise(
-      `yt-dlp --no-playlist --skip-download --dump-json "${url.trim()}"`,
+      `yt-dlp --no-playlist --skip-download --dump-json "${trimmedUrl}"`,
       { timeout: 30000, maxBuffer: 1024 * 1024 * 10 }
     );
     const info = JSON.parse(stdout);
 
     return res.json({
       isValid: true,
-      platform: detectPlatform(info.extractor_key || info.extractor, url),
+      platform: detectPlatform(info.extractor_key || info.extractor, trimmedUrl) || urlPlatform,
       videoId: info.id || null,
       title: info.title || null,
       thumbnail: info.thumbnail || null,
@@ -116,7 +173,8 @@ app.post('/api/analyze', async (req, res) => {
     console.error('Erè analiz:', error.message);
     return res.json({
       isValid: false,
-      reason: 'Nou pa ka jwenn videyo sa a. Verifye lyen an oswa videyo a ka prive/efase.',
+      platform: urlPlatform,
+      reason: buildErrorMessage(urlPlatform, error.message),
     });
   }
 });
@@ -148,7 +206,7 @@ app.post('/api/download', async (req, res) => {
     const job = jobs.get(jobId);
     if (job) {
       job.status = 'error';
-      job.error = err.message || 'Erè pandan telechajman';
+      job.error = buildErrorMessage(job.platform || detectPlatformFromUrl(url.trim()), err.message);
     }
   });
 });
@@ -156,6 +214,7 @@ app.post('/api/download', async (req, res) => {
 async function runDownloadJob(jobId, url, quality, format) {
   const job = jobs.get(jobId);
   job.status = 'running';
+  const urlPlatform = detectPlatformFromUrl(url);
 
   const qualityMap = {
     best: 'bestvideo+bestaudio/best',
@@ -172,9 +231,10 @@ async function runDownloadJob(jobId, url, quality, format) {
       maxBuffer: 1024 * 1024 * 10,
     });
     videoInfo = JSON.parse(stdout);
-  } catch {
+  } catch (error) {
     job.status = 'error';
-    job.error = 'Nou pa ka jwenn enfòmasyon sou videyo sa a.';
+    job.platform = urlPlatform;
+    job.error = buildErrorMessage(urlPlatform, error.message);
     return;
   }
 
@@ -210,7 +270,9 @@ async function runDownloadJob(jobId, url, quality, format) {
       if (code === 0) {
         resolve();
       } else {
-        reject(new Error(lastError.split('\n').filter(Boolean).pop() || `yt-dlp fini ak kòd erè ${code}`));
+        const rawMsg = lastError.split('\n').filter(Boolean).pop() || `yt-dlp fini ak kòd erè ${code}`;
+        job.platform = urlPlatform;
+        reject(new Error(rawMsg));
       }
     });
 
@@ -363,4 +425,3 @@ app.listen(PORT, '0.0.0.0', () => {
 });
 
 module.exports = app;
- 
